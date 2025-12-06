@@ -30,6 +30,9 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 		slogger:        slog.New(handler),
 		Service:        "claude-code",
 		SessionManager: sessionMgr,
+		UserID:         "test-user-123",
+		UserSource:     "env",
+		Hostname:       "test-hostname",
 	}
 
 	logger.LogUserPrompt(testSessionID, "Hello, Claude!")
@@ -44,6 +47,15 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 	}
 	if result["session_id"] != testSessionID {
 		t.Errorf("Expected session_id %s, got %v", testSessionID, result["session_id"])
+	}
+	if result["user_id"] != "test-user-123" {
+		t.Errorf("Expected user_id 'test-user-123', got %v", result["user_id"])
+	}
+	if result["user_source"] != "env" {
+		t.Errorf("Expected user_source 'env', got %v", result["user_source"])
+	}
+	if result["hostname"] != "test-hostname" {
+		t.Errorf("Expected hostname 'test-hostname', got %v", result["hostname"])
 	}
 	if result["role"] != "user" {
 		t.Errorf("Expected role 'user', got %v", result["role"])
@@ -74,6 +86,9 @@ func TestLogger_LogAssistantResponse(t *testing.T) {
 		slogger:        slog.New(handler),
 		Service:        "claude-code",
 		SessionManager: sessionMgr,
+		UserID:         "test-user-456",
+		UserSource:     "api_key_hash",
+		Hostname:       "test-host",
 	}
 
 	logger.LogAssistantResponse(testSessionID, "How can I help?")
@@ -83,6 +98,15 @@ func TestLogger_LogAssistantResponse(t *testing.T) {
 		t.Fatalf("Failed to unmarshal log output: %v", err)
 	}
 
+	if result["user_id"] != "test-user-456" {
+		t.Errorf("Expected user_id 'test-user-456', got %v", result["user_id"])
+	}
+	if result["user_source"] != "api_key_hash" {
+		t.Errorf("Expected user_source 'api_key_hash', got %v", result["user_source"])
+	}
+	if result["hostname"] != "test-host" {
+		t.Errorf("Expected hostname 'test-host', got %v", result["hostname"])
+	}
 	if result["role"] != "assistant" {
 		t.Errorf("Expected role 'assistant', got %v", result["role"])
 	}
@@ -108,6 +132,9 @@ func TestLogger_LogSessionStart(t *testing.T) {
 		slogger:        slog.New(handler),
 		Service:        "claude-code",
 		SessionManager: sessionMgr,
+		UserID:         "test-user-789",
+		UserSource:     "system",
+		Hostname:       "test-machine",
 	}
 
 	metadata := map[string]string{
@@ -122,6 +149,15 @@ func TestLogger_LogSessionStart(t *testing.T) {
 		t.Fatalf("Failed to unmarshal log output: %v", err)
 	}
 
+	if result["user_id"] != "test-user-789" {
+		t.Errorf("Expected user_id 'test-user-789', got %v", result["user_id"])
+	}
+	if result["user_source"] != "system" {
+		t.Errorf("Expected user_source 'system', got %v", result["user_source"])
+	}
+	if result["hostname"] != "test-machine" {
+		t.Errorf("Expected hostname 'test-machine', got %v", result["hostname"])
+	}
 	if result["role"] != "system" {
 		t.Errorf("Expected role 'system', got %v", result["role"])
 	}
@@ -155,6 +191,9 @@ func TestLogger_LogSessionEnd(t *testing.T) {
 		slogger:        slog.New(handler),
 		Service:        "claude-code",
 		SessionManager: sessionMgr,
+		UserID:         "test-user-end",
+		UserSource:     "anonymous",
+		Hostname:       "end-host",
 	}
 
 	logger.LogSessionEnd(testSessionID)
@@ -164,6 +203,15 @@ func TestLogger_LogSessionEnd(t *testing.T) {
 		t.Fatalf("Failed to unmarshal log output: %v", err)
 	}
 
+	if result["user_id"] != "test-user-end" {
+		t.Errorf("Expected user_id 'test-user-end', got %v", result["user_id"])
+	}
+	if result["user_source"] != "anonymous" {
+		t.Errorf("Expected user_source 'anonymous', got %v", result["user_source"])
+	}
+	if result["hostname"] != "end-host" {
+		t.Errorf("Expected hostname 'end-host', got %v", result["hostname"])
+	}
 	if result["event"] != "session_end" {
 		t.Errorf("Expected event 'session_end', got %v", result["event"])
 	}
@@ -188,5 +236,14 @@ func TestNewLogger(t *testing.T) {
 	}
 	if logger.slogger == nil {
 		t.Error("slogger should not be nil")
+	}
+	if logger.UserID == "" {
+		t.Error("UserID should not be empty")
+	}
+	if logger.UserSource == "" {
+		t.Error("UserSource should not be empty")
+	}
+	if logger.Hostname == "" {
+		t.Error("Hostname should not be empty")
 	}
 }
