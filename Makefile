@@ -1,9 +1,20 @@
-.PHONY: build test test-integration test-crash test-all clean install fmt vet
+.PHONY: build test test-integration test-crash test-gemini test-all clean install
+.PHONY: fmt lint check deps build-all help
 
 BINARY_NAME=tapline
 
 build:
 	go build -o $(BINARY_NAME) ./cmd/tapline
+
+build-all:
+	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_NAME)-darwin-amd64 ./cmd/tapline
+	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_NAME)-darwin-arm64 ./cmd/tapline
+	GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME)-linux-amd64 ./cmd/tapline
+	GOOS=linux GOARCH=arm64 go build -o $(BINARY_NAME)-linux-arm64 ./cmd/tapline
+	GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME)-windows-amd64.exe ./cmd/tapline
+
+install:
+	go install ./cmd/tapline
 
 test:
 	go test -v ./...
@@ -14,55 +25,65 @@ test-integration: build
 test-crash: build
 	./test/crash_resilience_test.sh
 
-test-all: test test-integration test-crash
+test-gemini: build
+	./test/gemini_wrapper_test.sh
+
+test-all: test test-integration test-crash test-gemini
 
 test-coverage:
 	go test -v -cover ./...
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
-clean:
-	go clean
-	rm -f $(BINARY_NAME)
-	rm -f coverage.out coverage.html
-	rm -f test/*.log
-	rm -f ~/.tapline/session_id
-
-install:
-	go install ./cmd/tapline
-
 fmt:
 	go fmt ./...
 
-vet:
-	go vet ./...
+lint:
+	golangci-lint run --timeout=5m
+
+lint-fix:
+	golangci-lint run --timeout=5m --fix
+
+check: fmt lint test
+
+ci: check test-all
 
 deps:
 	go mod download
 	go mod tidy
 
-check: fmt vet test
-
-build-all:
-	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_NAME)-darwin-amd64 ./cmd/tapline
-	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_NAME)-darwin-arm64 ./cmd/tapline
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME)-linux-amd64 ./cmd/tapline
-	GOOS=linux GOARCH=arm64 go build -o $(BINARY_NAME)-linux-arm64 ./cmd/tapline
-	GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME)-windows-amd64.exe ./cmd/tapline
+clean:
+	go clean
+	rm -f $(BINARY_NAME)
+	rm -f $(BINARY_NAME)-*
+	rm -f coverage.out coverage.html
+	rm -f test/*.log
+	rm -f ~/.tapline/session_id
 
 help:
 	@echo "Available targets:"
-	@echo "  build            - Build the binary"
+	@echo ""
+	@echo "Build targets:"
+	@echo "  build            - Build the binary for current platform"
+	@echo "  build-all        - Build for multiple platforms (darwin, linux, windows)"
+	@echo "  install          - Install binary to GOPATH/bin"
+	@echo ""
+	@echo "Test targets:"
 	@echo "  test             - Run unit tests"
 	@echo "  test-integration - Run integration tests"
 	@echo "  test-crash       - Run crash resilience tests"
-	@echo "  test-all         - Run all tests (unit + integration + crash)"
+	@echo "  test-gemini      - Run Gemini CLI wrapper tests"
+	@echo "  test-all         - Run all tests"
 	@echo "  test-coverage    - Run tests with coverage report"
-	@echo "  clean            - Remove build artifacts and test files"
-	@echo "  install          - Install binary to GOPATH/bin"
-	@echo "  fmt              - Format code"
-	@echo "  vet              - Run go vet"
+	@echo ""
+	@echo "Code quality targets:"
+	@echo "  fmt              - Format code with go fmt"
+	@echo "  lint             - Run golangci-lint"
+	@echo "  lint-fix         - Run golangci-lint with auto-fix"
+	@echo "  check            - Run fmt + lint + test"
+	@echo "  ci               - Run check + test-all (CI pipeline)"
+	@echo ""
+	@echo "Other targets:"
 	@echo "  deps             - Download and tidy dependencies"
-	@echo "  check            - Run fmt, vet, and test"
-	@echo "  build-all        - Build for multiple platforms"
+	@echo "  clean            - Remove build artifacts and test files"
 	@echo "  help             - Show this help message"

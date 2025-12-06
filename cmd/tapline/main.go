@@ -23,20 +23,17 @@ func main() {
 
 	command := os.Args[1]
 
-	// Handle version command
 	if command == "version" {
 		fmt.Printf("tapline %s (commit: %s, built: %s)\n", version, commit, date)
 		os.Exit(0)
 	}
 
-	// Initialize session manager
 	sessionMgr, err := session.NewManager()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize session manager: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Create logger
 	log := logger.NewLogger("claude-code", sessionMgr)
 
 	switch command {
