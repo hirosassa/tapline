@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/hirosassa/tapline/workflows/CI/badge.svg)](https://github.com/hirosassa/tapline/actions?query=workflow%3ACI)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hirosassa/tapline)](https://goreportcard.com/report/github.com/hirosassa/tapline)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/hirosassa/tapline/graph/badge.svg?token=349A1NN1JT)](https://codecov.io/gh/hirosassa/tapline)
 [![GitHub release](https://img.shields.io/github/release/hirosassa/tapline.svg)](https://github.com/hirosassa/tapline/releases)
 
 Tapline is a unified conversation logging system for multiple AI chat services (Claude Code, Gemini CLI, ChatGPT, etc.). It outputs structured logs in JSON Lines format to stdout, making it easy to integrate with log aggregation systems.
