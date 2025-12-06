@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -44,10 +45,22 @@ func wrapGemini(args []string) {
 		log.LogUserPrompt(sessionID, prompt)
 	}
 
+	response, exitCode := executeGemini(args)
+
+	if response != "" {
+		log.LogAssistantResponse(sessionID, response)
+	}
+
+	if exitCode != 0 {
+		os.Exit(exitCode)
+	}
+}
+
+func executeGemini(args []string) (response string, exitCode int) {
 	geminiPath, err := exec.LookPath("gemini")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: 'gemini' command not found in PATH\n")
-		os.Exit(1)
+		return "", 1
 	}
 
 	ctx := context.Background()
@@ -56,20 +69,38 @@ func wrapGemini(args []string) {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating stdout pipe: %v\n", err)
-		os.Exit(1)
+		return "", 1
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating stderr pipe: %v\n", err)
-		os.Exit(1)
+		return "", 1
 	}
 
 	if err := cmd.Start(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error starting gemini: %v\n", err)
-		os.Exit(1)
+		return "", 1
 	}
 
+	response = captureOutput(stdout, stderr)
+
+	err = cmd.Wait()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitCode = exitErr.ExitCode()
+			return
+		}
+		exitCode = 1
+		return
+	}
+
+	exitCode = 0
+	return
+}
+
+func captureOutput(stdout, stderr io.Reader) string {
 	var response strings.Builder
 
 	stdoutDone := make(chan bool)
@@ -81,6 +112,9 @@ func wrapGemini(args []string) {
 			response.WriteString(line)
 			response.WriteString("\n")
 		}
+		if err := scanner.Err(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading stdout: %v\n", err)
+		}
 		stdoutDone <- true
 	}()
 
@@ -90,25 +124,16 @@ func wrapGemini(args []string) {
 		for scanner.Scan() {
 			fmt.Fprintln(os.Stderr, scanner.Text())
 		}
+		if err := scanner.Err(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading stderr: %v\n", err)
+		}
 		stderrDone <- true
 	}()
 
 	<-stdoutDone
 	<-stderrDone
 
-	err = cmd.Wait()
-
-	if response.Len() > 0 {
-		log.LogAssistantResponse(sessionID, strings.TrimSpace(response.String()))
-	}
-
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			os.Exit(exitErr.ExitCode())
-		}
-		os.Exit(1)
-	}
+	return strings.TrimSpace(response.String())
 }
 
 func runGeminiDirectly(args []string) {

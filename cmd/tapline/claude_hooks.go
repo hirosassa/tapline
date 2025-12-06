@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hirosassa/tapline/pkg/logger"
 	"github.com/hirosassa/tapline/pkg/session"
 )
 
-func handleConversationStart() {
+func initSession() (*logger.Logger, *session.Manager) {
 	sessionMgr, err := session.NewManager()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize session manager: %v\n", err)
@@ -17,6 +18,12 @@ func handleConversationStart() {
 	}
 
 	log := logger.NewLogger("claude-code", sessionMgr)
+
+	return log, sessionMgr
+}
+
+func handleConversationStart() {
+	log, sessionMgr := initSession()
 
 	sessionID := uuid.New().String()
 	if err := sessionMgr.SetSessionID(sessionID); err != nil {
@@ -33,13 +40,7 @@ func handleConversationStart() {
 }
 
 func handleConversationEnd() {
-	sessionMgr, err := session.NewManager()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize session manager: %v\n", err)
-		os.Exit(1)
-	}
-
-	log := logger.NewLogger("claude-code", sessionMgr)
+	log, sessionMgr := initSession()
 
 	sessionID, err := sessionMgr.GetSessionID()
 	if err != nil {
@@ -60,13 +61,7 @@ func handleUserPrompt(args []string) {
 		os.Exit(1)
 	}
 
-	sessionMgr, err := session.NewManager()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize session manager: %v\n", err)
-		os.Exit(1)
-	}
-
-	log := logger.NewLogger("claude-code", sessionMgr)
+	log, sessionMgr := initSession()
 
 	sessionID, err := sessionMgr.GetSessionID()
 	if err != nil {
@@ -74,16 +69,7 @@ func handleUserPrompt(args []string) {
 		os.Exit(1)
 	}
 
-	prompt := args[0]
-	if len(args) > 1 {
-		prompt = ""
-		for i, arg := range args {
-			if i > 0 {
-				prompt += " "
-			}
-			prompt += arg
-		}
-	}
+	prompt := strings.Join(args, " ")
 
 	log.LogUserPrompt(sessionID, prompt)
 }
@@ -94,13 +80,7 @@ func handleAssistantResponse(args []string) {
 		os.Exit(1)
 	}
 
-	sessionMgr, err := session.NewManager()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize session manager: %v\n", err)
-		os.Exit(1)
-	}
-
-	log := logger.NewLogger("claude-code", sessionMgr)
+	log, sessionMgr := initSession()
 
 	sessionID, err := sessionMgr.GetSessionID()
 	if err != nil {
@@ -108,16 +88,7 @@ func handleAssistantResponse(args []string) {
 		os.Exit(1)
 	}
 
-	response := args[0]
-	if len(args) > 1 {
-		response = ""
-		for i, arg := range args {
-			if i > 0 {
-				response += " "
-			}
-			response += arg
-		}
-	}
+	response := strings.Join(args, " ")
 
 	log.LogAssistantResponse(sessionID, response)
 }
