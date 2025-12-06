@@ -61,7 +61,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Run integration and crash tests
-        run: make test-integration test-crash test-gemini
+        run: make test-integration test-crash test-gemini test-codex
 
   lint:
     name: Lint

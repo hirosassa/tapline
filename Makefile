@@ -1,4 +1,4 @@
-.PHONY: build test test-integration test-crash test-gemini test-all clean install
+.PHONY: build test test-integration test-crash test-gemini test-codex test-all clean install
 .PHONY: fmt lint check deps build-all help
 
 BINARY_NAME=tapline
@@ -28,7 +28,10 @@ test-crash: build
 test-gemini: build
 	./test/gemini_wrapper_test.sh
 
-test-all: test test-integration test-crash test-gemini
+test-codex: build
+	./test/codex_notify_test.sh
+
+test-all: test test-integration test-crash test-gemini test-codex
 
 test-coverage:
 	go test -v -cover ./...
@@ -73,6 +76,7 @@ help:
 	@echo "  test-integration - Run integration tests"
 	@echo "  test-crash       - Run crash resilience tests"
 	@echo "  test-gemini      - Run Gemini CLI wrapper tests"
+	@echo "  test-codex       - Run Codex CLI notify tests"
 	@echo "  test-all         - Run all tests"
 	@echo "  test-coverage    - Run tests with coverage report"
 	@echo ""

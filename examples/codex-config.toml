@@ -1,0 +1,28 @@
+# Codex CLI Configuration for Tapline Integration
+#
+# Copy this file to ~/.codex/config.toml or merge with your existing configuration
+# For full configuration options, see: https://developers.openai.com/codex/local-config/
+
+# Tapline integration: External notification handler
+# Update the path to point to your tapline installation
+notify = "/path/to/tapline/scripts/codex-notify.sh"
+
+# Optional: Enable TUI notifications as well
+[tui]
+notifications = true
+
+# Example: Other common Codex CLI settings
+
+# Model configuration
+# [model]
+# name = "gpt-5-codex"  # or "gpt-5"
+# reasoning_level = "medium"  # or "low", "high"
+
+# Approval mode (how much Codex can do without confirmation)
+# [approval]
+# mode = "auto"  # or "manual", "semi-auto"
+
+# Sandbox settings
+# [sandbox]
+# enabled = true
+# working_directory = "."

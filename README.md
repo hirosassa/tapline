@@ -63,10 +63,12 @@ sudo cp tapline /usr/local/bin/
 Tapline currently supports the following AI services:
 
 1. **Claude Code** - Native integration via hooks system
-2. **Gemini CLI** - Wrapper script integration (temporary solution)
+2. **Codex CLI** - Native integration via notify configuration
+3. **Gemini CLI** - Wrapper script integration (temporary solution)
 
 See service-specific documentation:
 - [Claude Code Integration](#claude-code-integration)
+- [Codex CLI Integration](docs/CODEX_CLI.md)
 - [Gemini CLI Integration](docs/GEMINI_CLI.md)
 
 ### Claude Code Integration
