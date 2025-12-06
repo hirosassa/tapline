@@ -32,3 +32,11 @@ Thumbs.db
 
 # Session files (for testing)
 .tapline/
+
+# GoReleaser
+dist/
+*.tar.gz
+*.zip
+
+# CI/CD
+.secrets

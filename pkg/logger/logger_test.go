@@ -21,7 +21,6 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 	}
 	defer sessionMgr.ClearSession()
 
-	// Capture output
 	var buf bytes.Buffer
 	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
@@ -33,16 +32,13 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 		SessionManager: sessionMgr,
 	}
 
-	// Log user prompt
 	logger.LogUserPrompt(testSessionID, "Hello, Claude!")
 
-	// Parse output
 	var result map[string]interface{}
 	if err := json.Unmarshal(buf.Bytes(), &result); err != nil {
 		t.Fatalf("Failed to unmarshal log output: %v", err)
 	}
 
-	// Verify fields
 	if result["service"] != "claude-code" {
 		t.Errorf("Expected service 'claude-code', got %v", result["service"])
 	}
@@ -133,7 +129,6 @@ func TestLogger_LogSessionStart(t *testing.T) {
 		t.Errorf("Expected event 'session_start', got %v", result["event"])
 	}
 
-	// Check metadata
 	metadataResult, ok := result["metadata"].(map[string]interface{})
 	if !ok {
 		t.Fatal("Expected metadata to be a map")

@@ -1,3 +1,5 @@
+// Package session provides session ID management and persistence.
+// It stores session IDs in ~/.tapline/session_id for tracking conversation sessions.
 package session
 
 import (
@@ -27,8 +29,8 @@ func NewManager() (*Manager, error) {
 	sessionDir := filepath.Join(homeDir, sessionDirName)
 	sessionFile := filepath.Join(sessionDir, sessionFileName)
 
-	// Ensure session directory exists
-	if err := os.MkdirAll(sessionDir, 0755); err != nil {
+	// Ensure session directory exists with restricted permissions
+	if err := os.MkdirAll(sessionDir, 0o750); err != nil {
 		return nil, fmt.Errorf("failed to create session directory: %w", err)
 	}
 
@@ -62,7 +64,7 @@ func (m *Manager) SetSessionID(sessionID string) error {
 		return fmt.Errorf("session ID cannot be empty")
 	}
 
-	if err := os.WriteFile(m.sessionFile, []byte(sessionID), 0644); err != nil {
+	if err := os.WriteFile(m.sessionFile, []byte(sessionID), 0o600); err != nil {
 		return fmt.Errorf("failed to write session file: %w", err)
 	}
 

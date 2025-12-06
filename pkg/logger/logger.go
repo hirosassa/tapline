@@ -1,6 +1,10 @@
+// Package logger provides conversation logging functionality using structured logging.
+// It supports logging user prompts, assistant responses, and session lifecycle events
+// in JSON format to stdout with immediate flushing for durability.
 package logger
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
@@ -10,8 +14,8 @@ import (
 // Logger handles conversation logging using slog
 type Logger struct {
 	slogger        *slog.Logger
-	Service        string
 	SessionManager *session.Manager
+	Service        string
 }
 
 // NewLogger creates a new Logger instance with slog JSON handler
@@ -36,7 +40,8 @@ func (l *Logger) LogUserPrompt(sessionID, content string) {
 		slog.String("role", "user"),
 		slog.String("content", content),
 	)
-	os.Stdout.Sync() // Ensure immediate flush to disk
+	//nolint:errcheck // Sync errors are not critical for logging
+	os.Stdout.Sync()
 }
 
 // LogAssistantResponse logs an assistant response
@@ -47,7 +52,8 @@ func (l *Logger) LogAssistantResponse(sessionID, content string) {
 		slog.String("role", "assistant"),
 		slog.String("content", content),
 	)
-	os.Stdout.Sync() // Ensure immediate flush to disk
+	//nolint:errcheck // Sync errors are not critical for logging
+	os.Stdout.Sync()
 }
 
 // LogSessionStart logs a session start event
@@ -69,8 +75,9 @@ func (l *Logger) LogSessionStart(sessionID string, metadata map[string]string) {
 		attrs = append(attrs, slog.Group("metadata", metadataAttrs...))
 	}
 
-	l.slogger.LogAttrs(nil, slog.LevelInfo, "conversation", attrs...)
-	os.Stdout.Sync() // Ensure immediate flush to disk
+	l.slogger.LogAttrs(context.TODO(), slog.LevelInfo, "conversation", attrs...)
+	//nolint:errcheck // Sync errors are not critical for logging
+	os.Stdout.Sync()
 }
 
 // LogSessionEnd logs a session end event
@@ -82,7 +89,8 @@ func (l *Logger) LogSessionEnd(sessionID string) {
 		slog.String("content", ""),
 		slog.String("event", "session_end"),
 	)
-	os.Stdout.Sync() // Ensure immediate flush to disk
+	//nolint:errcheck // Sync errors are not critical for logging
+	os.Stdout.Sync()
 }
 
 // Adapter interface for future service implementations
@@ -90,6 +98,5 @@ type Adapter interface {
 	// ParseEvent parses service-specific events into log attributes
 	ParseEvent(eventType string, data interface{}) ([]slog.Attr, error)
 
-	// ServiceName returns the name of the service
 	ServiceName() string
 }

@@ -1,0 +1,201 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod download
+
+builds:
+  - id: tapline
+    main: ./cmd/tapline
+    binary: tapline
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    flags:
+      - -trimpath
+
+archives:
+  - id: tapline
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE*
+      - QUICKSTART.md
+      - docs/*
+      - examples/*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - 'typo'
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Performance Improvements
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: hirosassa
+    name: tapline
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## Tapline {{ .Tag }} Release
+
+    Thanks for using Tapline! This release includes:
+  footer: |
+    ## Installation
+
+    ### Binary Download
+    Download the appropriate binary for your platform from the assets below.
+
+    ### Using Go
+    ```bash
+    go install github.com/hirosassa/tapline/cmd/tapline@{{ .Tag }}
+    ```
+
+    ### Homebrew (macOS/Linux)
+    ```bash
+    brew install hirosassa/tap/tapline
+    ```
+
+    ## Verify Checksums
+    ```bash
+    sha256sum -c checksums.txt
+    ```
+
+    **Full Changelog**: https://github.com/hirosassa/tapline/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+brews:
+  - name: tapline
+    repository:
+      owner: hirosassa
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/hirosassa/tapline
+    description: "AI conversation logger with structured output"
+    license: MIT
+    folder: Formula
+    install: |
+      bin.install "tapline"
+    test: |
+      system "#{bin}/tapline", "conversation_start"
+
+nfpms:
+  - id: tapline
+    package_name: tapline
+    vendor: hirosassa
+    homepage: https://github.com/hirosassa/tapline
+    maintainer: Hiro Sassa <hirosassa@example.com>
+    description: AI conversation logger with structured output
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    section: utils
+    contents:
+      - src: ./README.md
+        dst: /usr/share/doc/tapline/README.md
+      - src: ./QUICKSTART.md
+        dst: /usr/share/doc/tapline/QUICKSTART.md
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+
+dockers:
+  - image_templates:
+      - "ghcr.io/hirosassa/tapline:{{ .Version }}-amd64"
+      - "ghcr.io/hirosassa/tapline:latest-amd64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+  - image_templates:
+      - "ghcr.io/hirosassa/tapline:{{ .Version }}-arm64"
+      - "ghcr.io/hirosassa/tapline:latest-arm64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+docker_manifests:
+  - name_template: "ghcr.io/hirosassa/tapline:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/hirosassa/tapline:{{ .Version }}-amd64"
+      - "ghcr.io/hirosassa/tapline:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/hirosassa/tapline:latest"
+    image_templates:
+      - "ghcr.io/hirosassa/tapline:latest-amd64"
+      - "ghcr.io/hirosassa/tapline:latest-arm64"
+
+announce:
+  skip: false
