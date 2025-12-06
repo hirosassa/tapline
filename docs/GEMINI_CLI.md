@@ -13,18 +13,24 @@ This document explains how to use tapline with Google's Gemini CLI for conversat
 
 ## Installation
 
-### Step 1: Source the Wrapper Script
+### Step 1: Create Shell Alias or Function
 
 Add the following to your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.):
 
 ```bash
-# Source tapline gemini wrapper
-if [ -f /path/to/tapline/scripts/gemini-wrapper.sh ]; then
-    source /path/to/tapline/scripts/gemini-wrapper.sh
-fi
+# Tapline Gemini CLI wrapper
+gemini() {
+    tapline wrap-gemini "$@"
+}
 ```
 
-Replace `/path/to/tapline` with the actual path to your tapline installation.
+If `tapline` is not in your PATH, use the absolute path:
+
+```bash
+gemini() {
+    /path/to/tapline wrap-gemini "$@"
+}
+```
 
 ### Step 2: Reload Your Shell
 
@@ -34,40 +40,29 @@ source ~/.bashrc  # or ~/.zshrc
 
 ## Usage
 
-### Option 1: Use Wrapper Functions (Recommended)
-
-Use the `gemini_with_logging` function instead of the regular `gemini` command:
+Once the shell function/alias is set up, simply use `gemini` as normal:
 
 ```bash
-# Start a new session
-gemini_start_session
-
-# Run gemini with logging
-gemini_with_logging "Explain quantum computing"
-
-# End the session
-gemini_end_session
+# All gemini commands are automatically logged
+gemini "Explain quantum computing"
+gemini "Write a Python function to sort a list"
 ```
 
-### Option 2: Override the gemini Command
-
-If you want to automatically log all `gemini` commands, uncomment the alias line in the wrapper script:
-
-```bash
-# In scripts/gemini-wrapper.sh, uncomment this line:
-alias gemini='gemini_with_logging'
-```
-
-Then use `gemini` normally - all interactions will be logged automatically.
+The wrapper automatically:
+- Creates a session if one doesn't exist
+- Logs your prompt
+- Logs Gemini's response
+- Preserves all Gemini CLI functionality
 
 ## How It Works
 
-The wrapper script:
+The `tapline wrap-gemini` command:
 
 1. **Session Management**: Automatically starts a tapline session if one doesn't exist
 2. **Input Logging**: Logs your prompts as user messages
 3. **Output Capture**: Captures Gemini's responses and logs them as assistant messages
 4. **Transparent Pass-through**: All Gemini CLI functionality works normally
+5. **Exit Code Preservation**: Returns the same exit code as Gemini CLI
 
 ## Log Format
 

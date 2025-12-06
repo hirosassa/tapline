@@ -19,10 +19,14 @@ Add the notify handler to your Codex CLI configuration file (`~/.codex/config.to
 
 ```toml
 # Tapline integration
-notify = "/path/to/tapline/scripts/codex-notify.sh"
+notify = "tapline notify-codex"
 ```
 
-Replace `/path/to/tapline` with the actual path to your tapline installation.
+If `tapline` is not in your PATH, use the absolute path:
+
+```toml
+notify = "/path/to/tapline notify-codex"
+```
 
 You can use the example configuration as a starting point:
 
@@ -30,17 +34,11 @@ You can use the example configuration as a starting point:
 # Copy example configuration
 cp examples/codex-config.toml ~/.codex/config.toml
 
-# Edit and update the path
+# Edit and update the command
 nano ~/.codex/config.toml
 ```
 
-### Step 2: Make Sure Scripts are Executable
-
-```bash
-chmod +x scripts/codex-notify.sh
-```
-
-### Step 3: Test the Integration
+### Step 2: Test the Integration
 
 ```bash
 # Run the test script
@@ -51,8 +49,8 @@ chmod +x scripts/codex-notify.sh
 
 The integration uses Codex CLI's `notify` configuration:
 
-1. **Event Detection**: Codex CLI calls the notify script when events occur
-2. **Event Processing**: The script receives event data as JSON via stdin
+1. **Event Detection**: Codex CLI calls `tapline notify-codex` when events occur
+2. **Event Processing**: The command receives event data as JSON via stdin
 3. **Logging**: Events are logged to tapline based on event type
 4. **Session Management**: Sessions are automatically managed
 
@@ -79,7 +77,7 @@ Logs are written in JSON Lines format to stdout:
 Minimal configuration in `~/.codex/config.toml`:
 
 ```toml
-notify = "/path/to/tapline/scripts/codex-notify.sh"
+notify = "tapline notify-codex"
 ```
 
 ### With TUI Notifications
@@ -87,7 +85,7 @@ notify = "/path/to/tapline/scripts/codex-notify.sh"
 Enable both tapline logging and TUI notifications:
 
 ```toml
-notify = "/path/to/tapline/scripts/codex-notify.sh"
+notify = "tapline notify-codex"
 
 [tui]
 notifications = true
@@ -99,12 +97,13 @@ See `examples/codex-config.toml` for a complete configuration example with addit
 
 ## Advantages Over Other Integrations
 
-Compared to Gemini CLI's wrapper script approach, Codex CLI integration offers:
+Compared to Gemini CLI's wrapper approach, Codex CLI integration offers:
 
 1. **Native Integration**: Uses Codex CLI's official `notify` configuration
 2. **No Wrapper Needed**: No need to wrap or alias the codex command
 3. **Stability**: Less likely to break with Codex CLI updates
 4. **Official Support**: Built on documented Codex CLI features
+5. **Single Binary**: Everything included in `tapline` binary via `go install`
 
 ## Limitations
 

@@ -45,6 +45,10 @@ func main() {
 		handleUserPrompt(log, os.Args[2:])
 	case "assistant_response":
 		handleAssistantResponse(log, os.Args[2:])
+	case "wrap-gemini":
+		wrapGemini(os.Args[2:])
+	case "notify-codex":
+		notifyCodex()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
