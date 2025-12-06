@@ -1,0 +1,98 @@
+version: "2"
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - gocritic
+    - revive
+    - unconvert
+    - unparam
+    - gosec
+    - bodyclose
+    - noctx
+    - errname
+    - errorlint
+    - gochecknoinits
+    - goconst
+    - gocyclo
+    - prealloc
+    - predeclared
+    - whitespace
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+        - experimental
+        - opinionated
+
+    gocyclo:
+      min-complexity: 15
+
+    govet:
+      enable-all: true
+      disable:
+        - shadow
+
+    misspell:
+      locale: US
+
+    revive:
+      rules:
+        - name: exported
+          disabled: false
+          arguments:
+            - "checkPrivateReceivers"
+            - "sayRepetitiveInsteadOfStutters"
+
+    staticcheck:
+      checks: ["all"]
+
+    gosec:
+      excludes:
+        - G204 # Subprocess launched with variable - we need this for hooks
+        - G104 # Unhandled errors in os.Stdout.Sync - intentional for logging
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - gosec
+          - goconst
+
+      - path: _test\.go
+        text: "shadow: declaration of \"err\""
+        linters:
+          - govet
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  formats:
+    text:
+      print-issued-lines: true
+      print-linter-name: true

@@ -1,5 +1,10 @@
 # Tapline - AI Conversation Logger
 
+[![CI](https://github.com/hirosassa/tapline/workflows/CI/badge.svg)](https://github.com/hirosassa/tapline/actions?query=workflow%3ACI)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hirosassa/tapline)](https://goreportcard.com/report/github.com/hirosassa/tapline)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/release/hirosassa/tapline.svg)](https://github.com/hirosassa/tapline/releases)
+
 Tapline is a unified conversation logging system for multiple AI chat services (Claude Code, Gemini CLI, ChatGPT, etc.). It outputs structured logs in JSON Lines format to stdout, making it easy to integrate with log aggregation systems.
 
 ## Architecture
@@ -18,27 +23,44 @@ Tapline is a unified conversation logging system for multiple AI chat services (
 - Session ID management for conversation tracking
 - Claude Code integration via hooks system
 - Extensible adapter pattern for future services
-- Zero external dependencies - uses only Go standard library
+- Minimal dependencies - only `github.com/google/uuid` for session IDs
 
 ## Installation
 
-### Build from source
+### Download Pre-built Binaries (Recommended)
+
+Download the latest release from the [Releases page](https://github.com/hirosassa/tapline/releases):
 
 ```bash
-go mod download
-go build -o tapline ./cmd/tapline
+# Linux (amd64)
+wget https://github.com/hirosassa/tapline/releases/latest/download/tapline_Linux_x86_64.tar.gz
+tar xzf tapline_Linux_x86_64.tar.gz
+sudo mv tapline /usr/local/bin/
+
+# macOS (amd64)
+wget https://github.com/hirosassa/tapline/releases/latest/download/tapline_Darwin_x86_64.tar.gz
+tar xzf tapline_Darwin_x86_64.tar.gz
+sudo mv tapline /usr/local/bin/
+
+# macOS (arm64)
+wget https://github.com/hirosassa/tapline/releases/latest/download/tapline_Darwin_arm64.tar.gz
+tar xzf tapline_Darwin_arm64.tar.gz
+sudo mv tapline /usr/local/bin/
 ```
 
-### Install to PATH
+### Using Go Install
 
 ```bash
-go install ./cmd/tapline
+go install github.com/hirosassa/tapline/cmd/tapline@latest
 ```
 
-Or copy the binary to a directory in your PATH:
+### Build from Source
 
 ```bash
-cp tapline /usr/local/bin/
+git clone https://github.com/hirosassa/tapline.git
+cd tapline
+make build
+sudo cp tapline /usr/local/bin/
 ```
 
 ## Usage
@@ -199,10 +221,13 @@ tapline/
 
 Contributions are welcome! Please ensure:
 
-1. All tests pass: `go test ./...`
+1. All tests pass: `make test-all`
 2. Code is formatted: `go fmt ./...`
-3. Documentation is updated
+3. Linting passes: `golangci-lint run`
+4. Documentation is updated
+
+See [docs/CI_CD.md](docs/CI_CD.md) for details on the CI/CD pipeline.
 
 ## License
 
-[Add your license here]
+MIT License - see [LICENSE](LICENSE) file for details

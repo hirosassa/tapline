@@ -76,8 +76,9 @@ timestamps=$(jq -r '.time' < "$LOGFILE")
 prev_time=""
 while IFS= read -r time; do
     if [ -n "$prev_time" ]; then
-        # Just verify format is valid ISO 8601
-        if ! date -j -f "%Y-%m-%dT%H:%M:%S" "$(echo "$time" | cut -d'.' -f1)" > /dev/null 2>&1; then
+        # Verify format is valid RFC3339 (e.g., 2025-12-06T12:58:56.81854889Z or 2025-12-06T22:00:43.027168+09:00)
+        # Check format using regex: YYYY-MM-DDTHH:MM:SS.nnnnnnnnn(Z|+HH:MM|-HH:MM)
+        if ! echo "$time" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+(Z|[+-][0-9]{2}:[0-9]{2})$'; then
             echo "FAIL: Invalid timestamp format: $time"
             exit 1
         fi
