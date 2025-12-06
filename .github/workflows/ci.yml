@@ -60,14 +60,8 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Build binary
-        run: make build
-
-      - name: Run integration tests
-        run: ./test/integration_test.sh
-
-      - name: Run crash resilience tests
-        run: ./test/crash_resilience_test.sh
+      - name: Run integration and crash tests
+        run: make test-integration test-crash test-gemini
 
   lint:
     name: Lint

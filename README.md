@@ -7,13 +7,6 @@
 
 Tapline is a unified conversation logging system for multiple AI chat services (Claude Code, Gemini CLI, ChatGPT, etc.). It outputs structured logs in JSON Lines format to stdout, making it easy to integrate with log aggregation systems.
 
-## Architecture
-
-- **Unified Interface + Adapter Pattern**: Extensible design for multiple AI services
-- **Technology Stack**: Go for high performance and single binary deployment
-- **Log Format**: JSON Lines to stdout for flexible log processing
-- **Session Management**: Persistent session tracking across conversations
-
 ## Features
 
 - Structured logging using Go's standard `log/slog` library
@@ -64,6 +57,17 @@ sudo cp tapline /usr/local/bin/
 ```
 
 ## Usage
+
+### Supported Services
+
+Tapline currently supports the following AI services:
+
+1. **Claude Code** - Native integration via hooks system
+2. **Gemini CLI** - Wrapper script integration (temporary solution)
+
+See service-specific documentation:
+- [Claude Code Integration](#claude-code-integration)
+- [Gemini CLI Integration](docs/GEMINI_CLI.md)
 
 ### Claude Code Integration
 
@@ -137,7 +141,7 @@ Tapline manages session IDs persistently in `~/.tapline/session_id`. Sessions ar
 - Used for all subsequent logs in the same conversation
 - Cleared on `conversation_end`
 
-**Crash Resilience:** Even if `conversation_end` is never called (due to crashes or terminal closure), all logs up to that point are preserved. Each hook runs as an independent process that immediately flushes logs to disk with `os.Stdout.Sync()`. See [docs/LOGGING_GUARANTEES.md](docs/LOGGING_GUARANTEES.md) for details.
+**Crash Resilience:** Even if `conversation_end` is never called (due to crashes or terminal closure), all logs up to that point are preserved. Each hook runs as an independent process that immediately flushes logs to disk with `os.Stdout.Sync()`. 
 
 ## Log Processing Examples
 
@@ -179,44 +183,6 @@ go test ./pkg/logger
 go test ./pkg/session
 ```
 
-## Project Structure
-
-```
-tapline/
-├── cmd/
-│   └── tapline/
-│       └── main.go           # CLI entry point
-├── pkg/
-│   ├── logger/
-│   │   ├── logger.go         # Core logging functionality
-│   │   └── logger_test.go    # Logger tests
-│   └── session/
-│       ├── manager.go        # Session ID management
-│       └── manager_test.go   # Session tests
-├── .claude/
-│   └── hooks.json            # Claude Code hooks configuration
-├── go.mod
-├── go.sum
-├── README.md
-└── CLAUDE.md                 # Project documentation
-```
-
-## Future Enhancements
-
-### Phase 2: Additional Service Support
-
-- **Gemini CLI**: Wrapper script integration
-- **ChatGPT**: API proxy implementation
-- **Claude API**: HTTP proxy implementation
-
-### Planned Features
-
-- DuckDB adapter for direct database storage
-- Log rotation and archival
-- Analytics and conversation metrics
-- Web UI for log browsing
-- Real-time streaming to external systems
-
 ## Contributing
 
 Contributions are welcome! Please ensure:
@@ -225,8 +191,6 @@ Contributions are welcome! Please ensure:
 2. Code is formatted: `go fmt ./...`
 3. Linting passes: `golangci-lint run`
 4. Documentation is updated
-
-See [docs/CI_CD.md](docs/CI_CD.md) for details on the CI/CD pipeline.
 
 ## License
 
