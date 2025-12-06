@@ -17,7 +17,7 @@ install:
 	go install ./cmd/tapline
 
 test:
-	go test -v ./...
+	go test -v -race ./...
 
 test-integration: build
 	./test/integration_test.sh

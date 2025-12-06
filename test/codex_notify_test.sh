@@ -6,7 +6,6 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TAPLINE="$PROJECT_ROOT/tapline"
-NOTIFY_SCRIPT="$PROJECT_ROOT/scripts/codex-notify.sh"
 LOGFILE="codex_notify_test.log"
 
 cleanup() {
@@ -18,13 +17,13 @@ trap cleanup EXIT
 
 echo "=== Testing Codex CLI notify integration ==="
 
-# Test 1: Check notify script exists and is executable
-echo "Test 1: Notify script exists and is executable"
-if [ ! -x "$NOTIFY_SCRIPT" ]; then
-    echo "FAIL: Notify script not executable: $NOTIFY_SCRIPT"
+# Test 1: Check tapline binary exists
+echo "Test 1: Tapline binary exists"
+if [ ! -x "$TAPLINE" ]; then
+    echo "FAIL: Tapline binary not found: $TAPLINE"
     exit 1
 fi
-echo "PASS: Notify script is executable"
+echo "PASS: Tapline binary exists"
 
 # Test 2: Start a session
 echo "Test 2: Start session"
@@ -45,7 +44,7 @@ EVENT_JSON='{
   }
 }'
 
-echo "$EVENT_JSON" | $NOTIFY_SCRIPT
+echo "$EVENT_JSON" | $TAPLINE notify-codex
 
 # Give it a moment to process
 sleep 1
@@ -64,27 +63,22 @@ UNKNOWN_EVENT='{
   "data": {}
 }'
 
-echo "$UNKNOWN_EVENT" | $NOTIFY_SCRIPT
+echo "$UNKNOWN_EVENT" | $TAPLINE notify-codex
 echo "PASS: Unknown event handled gracefully"
 
-# Test 5: Test with missing tapline (should not fail)
-echo "Test 5: Handle missing tapline gracefully"
-PATH="/nonexistent:$PATH" echo "$EVENT_JSON" | $NOTIFY_SCRIPT || true
-echo "PASS: Script handles missing tapline gracefully"
-
-# Test 6: End session
-echo "Test 6: End session"
+# Test 5: End session
+echo "Test 5: End session"
 $TAPLINE conversation_end >> "$LOGFILE"
 echo "PASS: Session ended"
 
 echo ""
 echo "=== Codex notify tests passed! ==="
 echo "Summary:"
-echo "  - Notify script executable: YES"
+echo "  - Tapline binary: YES"
 echo "  - Session management: YES"
 echo "  - Event processing: YES"
 echo "  - Error handling: YES"
 echo ""
 echo "Configuration:"
 echo "  Add this to ~/.codex/config.toml:"
-echo "  notify = \"$NOTIFY_SCRIPT\""
+echo "  notify = \"$TAPLINE notify-codex\""

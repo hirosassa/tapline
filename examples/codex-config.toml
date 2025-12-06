@@ -4,8 +4,10 @@
 # For full configuration options, see: https://developers.openai.com/codex/local-config/
 
 # Tapline integration: External notification handler
-# Update the path to point to your tapline installation
-notify = "/path/to/tapline/scripts/codex-notify.sh"
+notify = "tapline notify-codex"
+
+# If tapline is not in your PATH, use absolute path:
+# notify = "/path/to/tapline notify-codex"
 
 # Optional: Enable TUI notifications as well
 [tui]
