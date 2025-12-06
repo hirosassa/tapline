@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -109,7 +110,9 @@ func handleSessionEnd(log *logger.Logger, sessionMgr *session.Manager) {
 	}
 
 	log.LogSessionEnd(sessionID)
-	_ = sessionMgr.ClearSession()
+	if err := sessionMgr.ClearSession(); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to clear session: %v\n", err)
+	}
 }
 
 func isTerminal(f *os.File) bool {

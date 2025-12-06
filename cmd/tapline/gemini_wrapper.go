@@ -101,16 +101,16 @@ func executeGemini(args []string) (response string, exitCode int) {
 }
 
 func captureOutput(stdout, stderr io.Reader) string {
-	var response strings.Builder
-
+	lines := make(chan string, 100)
 	stdoutDone := make(chan bool)
+	stderrDone := make(chan bool)
+
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
 			line := scanner.Text()
 			fmt.Println(line)
-			response.WriteString(line)
-			response.WriteString("\n")
+			lines <- line
 		}
 		if err := scanner.Err(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading stdout: %v\n", err)
@@ -118,7 +118,6 @@ func captureOutput(stdout, stderr io.Reader) string {
 		stdoutDone <- true
 	}()
 
-	stderrDone := make(chan bool)
 	go func() {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
@@ -130,8 +129,17 @@ func captureOutput(stdout, stderr io.Reader) string {
 		stderrDone <- true
 	}()
 
-	<-stdoutDone
-	<-stderrDone
+	go func() {
+		<-stdoutDone
+		<-stderrDone
+		close(lines)
+	}()
+
+	var response strings.Builder
+	for line := range lines {
+		response.WriteString(line)
+		response.WriteString("\n")
+	}
 
 	return strings.TrimSpace(response.String())
 }
