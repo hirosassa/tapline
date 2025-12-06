@@ -65,6 +65,7 @@ func executeGemini(args []string) (response string, exitCode int) {
 
 	ctx := context.Background()
 	cmd := exec.CommandContext(ctx, geminiPath, args...)
+	cmd.Stdin = os.Stdin
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
