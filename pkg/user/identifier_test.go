@@ -41,10 +41,12 @@ func TestGetIdentifier_APIKeyHash_Claude(t *testing.T) {
 }
 
 func TestGetIdentifier_APIKeyHash_Gemini(t *testing.T) {
-	os.Unsetenv("TAPLINE_USER_ID")
-	os.Unsetenv("ANTHROPIC_API_KEY")
 	os.Setenv("GEMINI_API_KEY", "test-gemini-key-1234567890")
-	defer os.Unsetenv("GEMINI_API_KEY")
+	defer func() {
+		os.Unsetenv("TAPLINE_USER_ID")
+		os.Unsetenv("ANTHROPIC_API_KEY")
+		os.Unsetenv("GEMINI_API_KEY")
+	}()
 
 	result := GetIdentifier("gemini-cli")
 
