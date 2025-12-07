@@ -40,6 +40,12 @@ func NewLogger(service string, sessionMgr *session.Manager) *Logger {
 		gitRepoURL = repoInfo.OriginURL
 		gitRepoName = repoInfo.RepoName
 		gitBranch = repoInfo.Branch
+	} else {
+		// Log at debug level; git info is optional, so we don't fail
+		tmpLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+		tmpLogger.Debug("Failed to retrieve git repo info", slog.Any("error", err))
 	}
 
 	return &Logger{
