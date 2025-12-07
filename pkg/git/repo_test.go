@@ -41,6 +41,16 @@ func TestExtractRepoName(t *testing.T) {
 			expected: "company/team/project",
 		},
 		{
+			name:     "SSH URL with protocol and port",
+			url:      "ssh://git@github.com:22/user/repo.git",
+			expected: "user/repo",
+		},
+		{
+			name:     "SSH URL with protocol, port, and nested path",
+			url:      "ssh://git@gitlab.com:22/company/team/project.git",
+			expected: "company/team/project",
+		},
+		{
 			name:     "URL with trailing whitespace",
 			url:      "  https://github.com/user/repo.git  ",
 			expected: "user/repo",

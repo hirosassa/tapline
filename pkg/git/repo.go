@@ -2,8 +2,10 @@
 package git
 
 import (
+	"context"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 // RepoInfo contains Git repository information
@@ -37,7 +39,9 @@ func GetRepoInfo() (*RepoInfo, error) {
 }
 
 func getGitOriginURL() (string, error) {
-	cmd := exec.Command("git", "remote", "get-url", "origin")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", "remote", "get-url", "origin")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -46,7 +50,9 @@ func getGitOriginURL() (string, error) {
 }
 
 func getGitBranch() (string, error) {
-	cmd := exec.Command("git", "branch", "--show-current")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", "branch", "--show-current")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -55,7 +61,9 @@ func getGitBranch() (string, error) {
 }
 
 func getGitCommit() (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--short", "HEAD")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -65,8 +73,9 @@ func getGitCommit() (string, error) {
 
 // extractRepoName extracts repository name from Git URL
 // Examples:
-//   https://github.com/user/repo.git -> user/repo
-//   git@github.com:user/repo.git -> user/repo
+//
+//	https://github.com/user/repo.git -> user/repo
+//	git@github.com:user/repo.git -> user/repo
 func extractRepoName(url string) string {
 	url = strings.TrimSpace(url)
 
@@ -81,9 +90,23 @@ func extractRepoName(url string) string {
 		}
 	}
 
+	// Handle SSH URLs with explicit protocol (e.g., ssh://git@github.com:22/user/repo.git)
+	if strings.HasPrefix(url, "ssh://") {
+		// Remove ssh:// prefix and optional user@host:port
+		url = strings.TrimPrefix(url, "ssh://")
+		// Find the first "/" which separates host from path
+		if idx := strings.Index(url, "/"); idx != -1 {
+			// Join everything after the first "/" to support nested paths
+			parts := strings.Split(url[idx+1:], "/")
+			return strings.Join(parts, "/")
+		}
+	}
+
+	// Handle SCP-like SSH URLs (e.g., git@github.com:user/repo.git)
 	if strings.Contains(url, "@") && strings.Contains(url, ":") {
 		parts := strings.Split(url, ":")
 		if len(parts) >= 2 {
+			// Take the last part after the last colon (handles both with and without port)
 			return parts[len(parts)-1]
 		}
 	}
@@ -93,7 +116,9 @@ func extractRepoName(url string) string {
 
 // IsGitRepo checks if the current directory is inside a Git repository
 func IsGitRepo() bool {
-	cmd := exec.Command("git", "rev-parse", "--git-dir")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--git-dir")
 	err := cmd.Run()
 	return err == nil
 }

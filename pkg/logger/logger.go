@@ -4,7 +4,6 @@
 package logger
 
 import (
-	"context"
 	"log/slog"
 	"os"
 
@@ -61,6 +60,20 @@ func NewLogger(service string, sessionMgr *session.Manager) *Logger {
 	}
 }
 
+// appendGitAttrs appends Git-related attributes to the slice if they are set
+func (l *Logger) appendGitAttrs(attrs []any) []any {
+	if l.GitRepoURL != "" {
+		attrs = append(attrs, slog.String("git_repo_url", l.GitRepoURL))
+	}
+	if l.GitRepoName != "" {
+		attrs = append(attrs, slog.String("git_repo_name", l.GitRepoName))
+	}
+	if l.GitBranch != "" {
+		attrs = append(attrs, slog.String("git_branch", l.GitBranch))
+	}
+	return attrs
+}
+
 // LogUserPrompt logs a user prompt
 func (l *Logger) LogUserPrompt(sessionID, content string) {
 	attrs := []any{
@@ -71,15 +84,7 @@ func (l *Logger) LogUserPrompt(sessionID, content string) {
 		slog.String("hostname", l.Hostname),
 	}
 
-	if l.GitRepoURL != "" {
-		attrs = append(attrs, slog.String("git_repo_url", l.GitRepoURL))
-	}
-	if l.GitRepoName != "" {
-		attrs = append(attrs, slog.String("git_repo_name", l.GitRepoName))
-	}
-	if l.GitBranch != "" {
-		attrs = append(attrs, slog.String("git_branch", l.GitBranch))
-	}
+	attrs = l.appendGitAttrs(attrs)
 
 	attrs = append(attrs,
 		slog.String("role", "user"),
@@ -101,15 +106,7 @@ func (l *Logger) LogAssistantResponse(sessionID, content string) {
 		slog.String("hostname", l.Hostname),
 	}
 
-	if l.GitRepoURL != "" {
-		attrs = append(attrs, slog.String("git_repo_url", l.GitRepoURL))
-	}
-	if l.GitRepoName != "" {
-		attrs = append(attrs, slog.String("git_repo_name", l.GitRepoName))
-	}
-	if l.GitBranch != "" {
-		attrs = append(attrs, slog.String("git_branch", l.GitBranch))
-	}
+	attrs = l.appendGitAttrs(attrs)
 
 	attrs = append(attrs,
 		slog.String("role", "assistant"),
@@ -123,7 +120,7 @@ func (l *Logger) LogAssistantResponse(sessionID, content string) {
 
 // LogSessionStart logs a session start event
 func (l *Logger) LogSessionStart(sessionID string, metadata map[string]string) {
-	attrs := []slog.Attr{
+	attrs := []any{
 		slog.String("service", l.Service),
 		slog.String("session_id", sessionID),
 		slog.String("user_id", l.UserID),
@@ -131,15 +128,7 @@ func (l *Logger) LogSessionStart(sessionID string, metadata map[string]string) {
 		slog.String("hostname", l.Hostname),
 	}
 
-	if l.GitRepoURL != "" {
-		attrs = append(attrs, slog.String("git_repo_url", l.GitRepoURL))
-	}
-	if l.GitRepoName != "" {
-		attrs = append(attrs, slog.String("git_repo_name", l.GitRepoName))
-	}
-	if l.GitBranch != "" {
-		attrs = append(attrs, slog.String("git_branch", l.GitBranch))
-	}
+	attrs = l.appendGitAttrs(attrs)
 
 	attrs = append(attrs,
 		slog.String("role", "system"),
@@ -156,7 +145,7 @@ func (l *Logger) LogSessionStart(sessionID string, metadata map[string]string) {
 		attrs = append(attrs, slog.Group("metadata", metadataAttrs...))
 	}
 
-	l.slogger.LogAttrs(context.TODO(), slog.LevelInfo, "conversation", attrs...)
+	l.slogger.Info("conversation", attrs...)
 	//nolint:errcheck // Sync errors are not critical for logging
 	os.Stdout.Sync()
 }
@@ -171,15 +160,7 @@ func (l *Logger) LogSessionEnd(sessionID string) {
 		slog.String("hostname", l.Hostname),
 	}
 
-	if l.GitRepoURL != "" {
-		attrs = append(attrs, slog.String("git_repo_url", l.GitRepoURL))
-	}
-	if l.GitRepoName != "" {
-		attrs = append(attrs, slog.String("git_repo_name", l.GitRepoName))
-	}
-	if l.GitBranch != "" {
-		attrs = append(attrs, slog.String("git_branch", l.GitBranch))
-	}
+	attrs = l.appendGitAttrs(attrs)
 
 	attrs = append(attrs,
 		slog.String("role", "system"),
