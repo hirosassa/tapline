@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/hirosassa/tapline/pkg/session"
+	"github.com/hirosassa/tapline/pkg/user"
 )
 
 // Logger handles conversation logging using slog
@@ -16,6 +17,9 @@ type Logger struct {
 	slogger        *slog.Logger
 	SessionManager *session.Manager
 	Service        string
+	UserID         string
+	UserSource     string
+	Hostname       string
 }
 
 // NewLogger creates a new Logger instance with slog JSON handler
@@ -25,10 +29,15 @@ func NewLogger(service string, sessionMgr *session.Manager) *Logger {
 		Level: slog.LevelInfo,
 	})
 
+	userInfo := user.GetIdentifier(service)
+
 	return &Logger{
 		slogger:        slog.New(handler),
 		Service:        service,
 		SessionManager: sessionMgr,
+		UserID:         userInfo.UserID,
+		UserSource:     userInfo.Source,
+		Hostname:       userInfo.Hostname,
 	}
 }
 
@@ -37,6 +46,9 @@ func (l *Logger) LogUserPrompt(sessionID, content string) {
 	l.slogger.Info("conversation",
 		slog.String("service", l.Service),
 		slog.String("session_id", sessionID),
+		slog.String("user_id", l.UserID),
+		slog.String("user_source", l.UserSource),
+		slog.String("hostname", l.Hostname),
 		slog.String("role", "user"),
 		slog.String("content", content),
 	)
@@ -49,6 +61,9 @@ func (l *Logger) LogAssistantResponse(sessionID, content string) {
 	l.slogger.Info("conversation",
 		slog.String("service", l.Service),
 		slog.String("session_id", sessionID),
+		slog.String("user_id", l.UserID),
+		slog.String("user_source", l.UserSource),
+		slog.String("hostname", l.Hostname),
 		slog.String("role", "assistant"),
 		slog.String("content", content),
 	)
@@ -61,6 +76,9 @@ func (l *Logger) LogSessionStart(sessionID string, metadata map[string]string) {
 	attrs := []slog.Attr{
 		slog.String("service", l.Service),
 		slog.String("session_id", sessionID),
+		slog.String("user_id", l.UserID),
+		slog.String("user_source", l.UserSource),
+		slog.String("hostname", l.Hostname),
 		slog.String("role", "system"),
 		slog.String("content", ""),
 		slog.String("event", "session_start"),
@@ -85,6 +103,9 @@ func (l *Logger) LogSessionEnd(sessionID string) {
 	l.slogger.Info("conversation",
 		slog.String("service", l.Service),
 		slog.String("session_id", sessionID),
+		slog.String("user_id", l.UserID),
+		slog.String("user_source", l.UserSource),
+		slog.String("hostname", l.Hostname),
 		slog.String("role", "system"),
 		slog.String("content", ""),
 		slog.String("event", "session_end"),

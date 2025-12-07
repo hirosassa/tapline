@@ -119,8 +119,8 @@ tapline conversation_end
 Each log entry is output as a single JSON line to stdout using Go's `log/slog`:
 
 ```json
-{"time":"2025-12-06T16:26:36.768095+09:00","level":"INFO","msg":"conversation","service":"claude-code","session_id":"c0db0a0f-561b-44d3-b213-13fd3d9c0472","role":"user","content":"Hello!"}
-{"time":"2025-12-06T16:26:37.768095+09:00","level":"INFO","msg":"conversation","service":"claude-code","session_id":"c0db0a0f-561b-44d3-b213-13fd3d9c0472","role":"assistant","content":"Hi there!"}
+{"time":"2025-12-06T16:26:36.768095+09:00","level":"INFO","msg":"conversation","service":"claude-code","session_id":"c0db0a0f-561b-44d3-b213-13fd3d9c0472","user_id":"user@example.com","user_source":"env","hostname":"workstation","role":"user","content":"Hello!"}
+{"time":"2025-12-06T16:26:37.768095+09:00","level":"INFO","msg":"conversation","service":"claude-code","session_id":"c0db0a0f-561b-44d3-b213-13fd3d9c0472","user_id":"user@example.com","user_source":"env","hostname":"workstation","role":"assistant","content":"Hi there!"}
 ```
 
 ### Log Schema
@@ -130,10 +130,56 @@ Each log entry is output as a single JSON line to stdout using Go's `log/slog`:
 - `msg`: Message type (always "conversation")
 - `service`: Service identifier (e.g., "claude-code", "gemini-cli")
 - `session_id`: UUID for the conversation session
+- `user_id`: User identifier (see [User Identification](#user-identification))
+- `user_source`: Source of user identification ("env", "api_key_hash", "system", or "anonymous")
+- `hostname`: Hostname where the log was generated
 - `role`: "user", "assistant", or "system"
 - `content`: The message content
 - `metadata`: Optional metadata object (for session events)
 - `event`: Optional event type (e.g., "session_start", "session_end")
+
+## User Identification
+
+Tapline identifies user information to include in logs following a priority order:
+
+### Priority Order
+
+1. **TAPLINE_USER_ID** (Explicit configuration)
+   ```bash
+   export TAPLINE_USER_ID="user@example.com"
+   # or
+   export TAPLINE_USER_ID="$(whoami)@$(hostname)"
+   ```
+
+2. **API Key Hash** (Automatic from service credentials)
+   - Claude: `ANTHROPIC_API_KEY`
+   - Gemini: `GEMINI_API_KEY` or `GOOGLE_API_KEY`
+   - OpenAI: `OPENAI_API_KEY`
+
+   The user_id is a 16-character hexadecimal string (8 bytes) derived from a SHA256 hash of the API key prefix, ensuring privacy while maintaining uniqueness.
+
+3. **System User** (Fallback to OS username)
+   - Uses the `USER` environment variable
+
+4. **Anonymous** (Final fallback)
+   - When no identification source is available
+
+### Example Log with User Information
+
+```json
+{
+  "time": "2025-12-07T08:41:21.315509+09:00",
+  "level": "INFO",
+  "msg": "conversation",
+  "service": "gemini-cli",
+  "session_id": "b17b3d28-b357-446e-b259-bd2be26c7aec",
+  "user_id": "a1b2c3d4e5f6g7h8",
+  "user_source": "api_key_hash",
+  "hostname": "workstation",
+  "role": "user",
+  "content": "Hello!"
+}
+```
 
 ## Session Management
 
