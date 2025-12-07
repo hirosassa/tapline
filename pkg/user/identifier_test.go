@@ -25,7 +25,10 @@ func TestGetIdentifier_TaplineUserID(t *testing.T) {
 func TestGetIdentifier_APIKeyHash_Claude(t *testing.T) {
 	os.Unsetenv("TAPLINE_USER_ID")
 	os.Setenv("ANTHROPIC_API_KEY", "sk-ant-test-key-1234567890")
-	defer os.Unsetenv("ANTHROPIC_API_KEY")
+	defer func() {
+		os.Unsetenv("TAPLINE_USER_ID")
+		os.Unsetenv("ANTHROPIC_API_KEY")
+	}()
 
 	result := GetIdentifier("claude-code")
 
