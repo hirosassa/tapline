@@ -36,18 +36,13 @@ builds:
 
 archives:
   - id: tapline
-    format: tar.gz
     name_template: >-
       {{ .ProjectName }}_
-      {{- .Version }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
     files:
       - README.md
       - LICENSE*
@@ -57,14 +52,12 @@ archives:
 
 checksum:
   name_template: 'checksums.txt'
-  algorithm: sha256
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
-  use: github
   filters:
     exclude:
       - '^docs:'
@@ -120,7 +113,9 @@ release:
     **Full Changelog**: https://github.com/hirosassa/tapline/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 brews:
-  - name: tapline
+  - ids:
+      - tapline
+    name: tapline
     repository:
       owner: hirosassa
       name: homebrew-tap
@@ -128,7 +123,7 @@ brews:
     homepage: https://github.com/hirosassa/tapline
     description: "AI conversation logger with structured output"
     license: MIT
-    folder: Formula
+    directory: Formula
     install: |
       bin.install "tapline"
     test: |
@@ -155,14 +150,14 @@ nfpms:
         dst: /usr/share/doc/tapline/QUICKSTART.md
     file_name_template: >-
       {{ .ProjectName }}_
-      {{- .Version }}_
       {{- .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
 
 dockers:
-  - image_templates:
+  - id: tapline-amd64
+    image_templates:
       - "ghcr.io/hirosassa/tapline:{{ .Version }}-amd64"
       - "ghcr.io/hirosassa/tapline:latest-amd64"
     use: buildx
@@ -173,8 +168,10 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+    goarch: amd64
 
-  - image_templates:
+  - id: tapline-arm64
+    image_templates:
       - "ghcr.io/hirosassa/tapline:{{ .Version }}-arm64"
       - "ghcr.io/hirosassa/tapline:latest-arm64"
     use: buildx
@@ -185,6 +182,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+    goarch: arm64
 
 docker_manifests:
   - name_template: "ghcr.io/hirosassa/tapline:{{ .Version }}"
@@ -196,6 +194,3 @@ docker_manifests:
     image_templates:
       - "ghcr.io/hirosassa/tapline:latest-amd64"
       - "ghcr.io/hirosassa/tapline:latest-arm64"
-
-announce:
-  skip: false
