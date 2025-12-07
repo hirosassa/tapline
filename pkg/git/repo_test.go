@@ -106,11 +106,12 @@ func TestGetGitBranch(t *testing.T) {
 		t.Fatalf("Failed to get branch: %v", err)
 	}
 
+	// Branch can be empty in detached HEAD state (e.g., GitHub Actions)
 	if branch == "" {
-		t.Error("Expected branch name to be non-empty")
+		t.Logf("Current branch: (detached HEAD)")
+	} else {
+		t.Logf("Current branch: %s", branch)
 	}
-
-	t.Logf("Current branch: %s", branch)
 }
 
 func TestGetGitCommit(t *testing.T) {
