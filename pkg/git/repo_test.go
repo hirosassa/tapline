@@ -36,6 +36,11 @@ func TestExtractRepoName(t *testing.T) {
 			expected: "company/project",
 		},
 		{
+			name:     "HTTPS GitLab URL with nested path",
+			url:      "https://gitlab.com/company/team/project.git",
+			expected: "company/team/project",
+		},
+		{
 			name:     "URL with trailing whitespace",
 			url:      "  https://github.com/user/repo.git  ",
 			expected: "user/repo",

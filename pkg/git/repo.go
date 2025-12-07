@@ -74,9 +74,10 @@ func extractRepoName(url string) string {
 
 	if strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://") {
 		parts := strings.Split(url, "/")
-		// Ensure the URL has at least 5 parts: protocol, domain, owner, repo
+		// Ensure the URL has at least 5 parts: protocol, empty, domain, owner/path, repo
 		if len(parts) >= 5 {
-			return parts[3] + "/" + parts[4]
+			// Join everything after the domain (parts[3] onwards) to support nested paths
+			return strings.Join(parts[3:], "/")
 		}
 	}
 
