@@ -209,11 +209,38 @@ func TestGetAPIKeyHash_UnknownService(t *testing.T) {
 }
 
 func TestGetAPIKeyHash_NoAPIKey(t *testing.T) {
+	origAnthropic := os.Getenv("ANTHROPIC_API_KEY")
+	origGemini := os.Getenv("GEMINI_API_KEY")
+	origGoogle := os.Getenv("GOOGLE_API_KEY")
+	origOpenAI := os.Getenv("OPENAI_API_KEY")
+
 	os.Unsetenv("ANTHROPIC_API_KEY")
 	os.Unsetenv("GEMINI_API_KEY")
 	os.Unsetenv("GOOGLE_API_KEY")
 	os.Unsetenv("OPENAI_API_KEY")
 
+	defer func() {
+		if origAnthropic != "" {
+			os.Setenv("ANTHROPIC_API_KEY", origAnthropic)
+		} else {
+			os.Unsetenv("ANTHROPIC_API_KEY")
+		}
+		if origGemini != "" {
+			os.Setenv("GEMINI_API_KEY", origGemini)
+		} else {
+			os.Unsetenv("GEMINI_API_KEY")
+		}
+		if origGoogle != "" {
+			os.Setenv("GOOGLE_API_KEY", origGoogle)
+		} else {
+			os.Unsetenv("GOOGLE_API_KEY")
+		}
+		if origOpenAI != "" {
+			os.Setenv("OPENAI_API_KEY", origOpenAI)
+		} else {
+			os.Unsetenv("OPENAI_API_KEY")
+		}
+	}()
 	hash := getAPIKeyHash("claude-code")
 
 	if hash != "" {
