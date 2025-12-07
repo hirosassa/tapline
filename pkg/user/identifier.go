@@ -80,11 +80,7 @@ func getAPIKeyHash(service string) string {
 		return ""
 	}
 
-	prefix := apiKey
-	if len(apiKey) > 16 {
-		prefix = apiKey[:16]
-	}
-
-	hash := sha256.Sum256([]byte(prefix))
+	// Always hash the full API key for consistent security properties.
+	hash := sha256.Sum256([]byte(apiKey))
 	return hex.EncodeToString(hash[:8])
 }
