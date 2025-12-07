@@ -133,6 +133,9 @@ Each log entry is output as a single JSON line to stdout using Go's `log/slog`:
 - `user_id`: User identifier (see [User Identification](#user-identification))
 - `user_source`: Source of user identification ("env", "api_key_hash", "system", or "anonymous")
 - `hostname`: Hostname where the log was generated
+- `git_repo_url`: Git remote origin URL (if in a Git repository)
+- `git_repo_name`: Repository name extracted from URL (e.g., "owner/repo")
+- `git_branch`: Current Git branch (if available)
 - `role`: "user", "assistant", or "system"
 - `content`: The message content
 - `metadata`: Optional metadata object (for session events)
@@ -179,6 +182,51 @@ Tapline identifies user information to include in logs following a priority orde
   "role": "user",
   "content": "Hello!"
 }
+```
+
+## Git Repository Integration
+
+Tapline automatically detects Git repository information when logging conversations. This allows filtering and analyzing conversations per repository, which is useful when working across multiple projects.
+
+### Automatic Detection
+
+When running inside a Git repository, Tapline automatically includes:
+
+- **git_repo_url**: The origin remote URL
+- **git_repo_name**: Extracted repository name (e.g., `owner/repo`)
+- **git_branch**: Current branch name
+
+### Example Log with Git Information
+
+```json
+{
+  "time": "2025-12-08T10:00:00.000000+09:00",
+  "level": "INFO",
+  "msg": "conversation",
+  "service": "claude-code",
+  "session_id": "abc-123-def-456",
+  "user_id": "user@example.com",
+  "user_source": "env",
+  "hostname": "workstation",
+  "git_repo_url": "https://github.com/hirosassa/tapline.git",
+  "git_repo_name": "hirosassa/tapline",
+  "git_branch": "main",
+  "role": "user",
+  "content": "Add new feature"
+}
+```
+
+### Filtering by Repository
+
+```bash
+# Filter logs by repository
+cat conversation.log | jq 'select(.git_repo_name=="hirosassa/tapline")'
+
+# Group conversations by repository
+cat conversation.log | jq -s 'group_by(.git_repo_name) | map({repo: .[0].git_repo_name, count: length})'
+
+# Find conversations on specific branch
+cat conversation.log | jq 'select(.git_branch=="feature-xyz")'
 ```
 
 ## Session Management

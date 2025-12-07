@@ -33,6 +33,9 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 		UserID:         "test-user-123",
 		UserSource:     "env",
 		Hostname:       "test-hostname",
+		GitRepoURL:     "https://github.com/test/repo.git",
+		GitRepoName:    "test/repo",
+		GitBranch:      "main",
 	}
 
 	logger.LogUserPrompt(testSessionID, "Hello, Claude!")
@@ -56,6 +59,15 @@ func TestLogger_LogUserPrompt(t *testing.T) {
 	}
 	if result["hostname"] != "test-hostname" {
 		t.Errorf("Expected hostname 'test-hostname', got %v", result["hostname"])
+	}
+	if result["git_repo_url"] != "https://github.com/test/repo.git" {
+		t.Errorf("Expected git_repo_url 'https://github.com/test/repo.git', got %v", result["git_repo_url"])
+	}
+	if result["git_repo_name"] != "test/repo" {
+		t.Errorf("Expected git_repo_name 'test/repo', got %v", result["git_repo_name"])
+	}
+	if result["git_branch"] != "main" {
+		t.Errorf("Expected git_branch 'main', got %v", result["git_branch"])
 	}
 	if result["role"] != "user" {
 		t.Errorf("Expected role 'user', got %v", result["role"])
@@ -246,4 +258,7 @@ func TestNewLogger(t *testing.T) {
 	if logger.Hostname == "" {
 		t.Error("Hostname should not be empty")
 	}
+
+	t.Logf("Git info: URL=%s, Name=%s, Branch=%s",
+		logger.GitRepoURL, logger.GitRepoName, logger.GitBranch)
 }
