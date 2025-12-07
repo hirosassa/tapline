@@ -156,7 +156,7 @@ Tapline identifies user information to include in logs following a priority orde
    - Gemini: `GEMINI_API_KEY` or `GOOGLE_API_KEY`
    - OpenAI: `OPENAI_API_KEY`
 
-   The user_id is a SHA256 hash (16 characters) derived from the API key prefix, ensuring privacy while maintaining uniqueness.
+   The user_id is a 16-character hexadecimal string (8 bytes) derived from a SHA256 hash of the API key prefix, ensuring privacy while maintaining uniqueness.
 
 3. **System User** (Fallback to OS username)
    - Uses the `USER` environment variable
